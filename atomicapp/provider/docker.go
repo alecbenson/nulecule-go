@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"path/filepath"
 )
 
 //Docker is a provider for Kubernetes
@@ -18,9 +19,10 @@ type Docker struct {
 }
 
 //Instantiates a new Kubernetes provider
-func NewDocker() *Docker {
+func NewDocker(targetPath string) *Docker {
 	provider := new(Docker)
 	provider.Config = new(Config)
+	provider.targetPath = targetPath
 	return provider
 }
 
@@ -33,16 +35,32 @@ func (p *Docker) Init() error {
 //Deploy the Docker Provider
 func (p *Docker) Deploy() error {
 	//Iterate through artifact entries for the docker provider
-	for _, artifactEntry := range p.Artifacts() {
-		if !utils.PathExists(artifactEntry.Path) {
-			logrus.Errorf("No such docker artifact: %v\n", artifactEntry.Path)
+	for _, artifact := range p.Artifacts() {
+		//sanitize the prefix from the file path
+		santitizedPath := utils.SanitizePath(artifact.Path)
+		//Form the absolute path of the artifact
+		fullPath := filepath.Join(p.targetPath, santitizedPath)
+
+		if !utils.PathExists(fullPath) {
+			logrus.Errorf("No such docker artifact: %v\n", fullPath)
 			return errors.New("No such docker artifact path")
 		}
-
-		file, err := ioutil.ReadFile(artifactEntry.Path)
+		err := p.dockerCmd(fullPath)
 		if err != nil {
-			logrus.Errorf("Error reading artifact file: %v\n", artifactEntry.Path)
+			return err
 		}
+	}
+	return nil
+}
+
+//Issues the commands in the given file to docker
+func (p *Docker) dockerCmd(artifactFile string) error {
+		file, err := ioutil.ReadFile(artifactFile)
+		if err != nil {
+			logrus.Errorf("Error reading artifact file: %v\n", artifactFile)
+			return errors.New("Unable to find docker artifact file")
+		}
+
 		cmds := strings.Fields(string(file))
 		dockerCmd := exec.Command(cmds[0], cmds[1:]...)
 
@@ -54,14 +72,13 @@ func (p *Docker) Deploy() error {
 
 		out, _ := dockerCmd.CombinedOutput()
 		logrus.Infof(string(out))
-	}
-	return nil
+		return nil
 }
 
 //Check to ensure that we have a valid version of docker before deploying
 func (p *Docker) checkVersion() error {
-	daemonOut, _ := exec.Command("sudo", "docker", "version", "--format", "'{{.Server.ApiVersion}}'").Output()
-	clientOut, _ := exec.Command("sudo", "docker", "version", "--format", "'{{.Client.ApiVersion}}'").Output()
+	daemonOut, _ := exec.Command("docker", "version", "--format", "'{{.Server.ApiVersion}}'").Output()
+	clientOut, _ := exec.Command("docker", "version", "--format", "'{{.Client.ApiVersion}}'").Output()
 
 	daemonString := strings.Trim(string(daemonOut), " '\n")
 	clientString := strings.Trim(string(clientOut), " '\n")

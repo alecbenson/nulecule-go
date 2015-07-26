@@ -215,7 +215,7 @@ func (b *Base) setTargetPath(filepath string) error {
 		logrus.Debugf("No target path provided, using current working directory")
 		filepath, err = os.Getwd()
 		if err != nil {
-			logrus.Errorf("Failed to get working directory")
+			logrus.Fatalf("Failed to get working directory")
 			return errors.New("Failed to set target path")
 		}
 	}
@@ -223,8 +223,12 @@ func (b *Base) setTargetPath(filepath string) error {
 		b.targetPath = filepath
 		return nil
 	}
-	logrus.Errorf("user provided an invalid target path: %s", filepath)
+	logrus.Fatalf("user provided an invalid target path: %s", filepath)
 	return errors.New("Failed to set target path")
+}
+
+func (b *Base) TargetPath() string {
+	return b.targetPath
 }
 
 //SetYAML is implemented by v1 of the go-yaml package. This method is invoked when go-yaml attempts to parse an ArtifactEntry via Unmarshal()

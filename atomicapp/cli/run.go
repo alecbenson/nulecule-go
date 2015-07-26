@@ -9,6 +9,7 @@ import (
 	"github.com/alecbenson/nulecule-go/atomicapp/constants"
 	"github.com/alecbenson/nulecule-go/atomicapp/nulecule"
 	"github.com/alecbenson/nulecule-go/atomicapp/provider"
+	"github.com/alecbenson/nulecule-go/atomicapp/utils"
 )
 
 func runFlagSet() *flag.FlagSet {
@@ -19,55 +20,50 @@ func runFlagSet() *flag.FlagSet {
 	return runFlagSet
 }
 
+//deployGraph starts the deploy process for all components
+func deployGraph(b *nulecule.Base) {
+	graph := b.MainfileData.Graph
+	targetPath := b.TargetPath()
 
-//Get the graph item of the main file
-//For each component:
-	//process
-func dispatchGraph(graph *[]nulecule.Component) {
-	if len(*graph) == 0 {
+	if len(graph) == 0 {
 		logrus.Errorf("Graph not specified in %v file\n", constants.MAIN_FILE)
 	}
-
-	for _, component := range *graph {
-		processComponent(component)
+	for _, component := range graph {
+		processComponent(component, targetPath)
 	}
 }
 
-//Get the provider from the nulecule base
-//iniitialize a generic provider
-//process all artifacts
-//deploy the component
-func processComponent(c nulecule.Component) {
+//processComponent iterates through the artifacts in the component and deploy them
+func processComponent(c nulecule.Component, targetPath string) {
 	//The provider class to deploy with
 	var prov provider.Provider
 	//Iterate through the component and deploy all of its providers
 	for providerName, artifactEntries := range c.Artifacts {
-		processArtifacts(c, providerName)
+		processArtifacts(c, providerName, targetPath)
 
 		logrus.Infof("Deploying provider: %s...", providerName)
-		prov = provider.New(providerName)
+		prov = provider.New(providerName, targetPath)
 		prov.SetArtifacts(artifactEntries)
 		prov.Init()
 		prov.Deploy()
 	}
 }
 
-//Get all artifacts provided by the component
-//for every artifact in the component that belongs to provider,
-	//recurse on inherited artifacts
-//run load artifact on each
-//apply an artifact template
-//save the artifact to the destination directory (write the templated artifact to the dest. directory)
-func processArtifacts(c nulecule.Component, provider string) {
+//processArtifacts iterates through each artifact entry
+//It then substitutes the Nulecule parameters in and saves them in the workdir
+func processArtifacts(c nulecule.Component, provider, targetPath string) {
 	for _, artifactEntry := range c.Artifacts[provider] {
-
 		//Process inherited artifacts as well
 		if len(artifactEntry.Repo.Inherit) > 0 {
 			for _, inherited_provider := range artifactEntry.Repo.Inherit {
-				processArtifacts(c, inherited_provider)
+				processArtifacts(c, inherited_provider, targetPath)
 			}
 		}
-
+		//sanitize the prefix from the file path
+		santitizedPath := utils.SanitizePath(artifactEntry.Path)
+		//Form the absolute path of the artifact
+		fullPath := filepath.Join(targetPath, santitizedPath)
+		nulecule.ApplyTemplate(fullPath, targetPath, c.Params)
 	}
 }
 
@@ -88,7 +84,7 @@ func runFunction() func(cmd *Command) {
 		base.CheckSpecVersion()
 		base.LoadAnswersFromPath(answersFile)
 		base.CheckAllArtifacts()
-		dispatchGraph(&base.MainfileData.Graph)
+		deployGraph(base)
 	}
 }
 

@@ -3,6 +3,7 @@ package provider
 import (
 	"github.com/alecbenson/nulecule-go/atomicapp/nulecule"
 	"github.com/alecbenson/nulecule-go/atomicapp/constants"
+	
 	"github.com/Sirupsen/logrus"
 	"strings"
 )
@@ -32,6 +33,8 @@ type Config struct {
 	InContainer bool
 	//Name of the namespace to run the provider in
 	Namespace string
+	//TargetPath is the path that all provider resources live in
+	targetPath string
 }
 
 //addCLIPaths adds filepath(s) to check for the provider program in
@@ -59,16 +62,17 @@ func (c *Config) DryRun() bool {
 	return c.dryRun
 }
 
+
 //New instantiates the provider with the give name
-func New(provider string) Provider{
+func New(provider string, targetPath string) Provider{
 	sanitizedProvider := strings.ToLower(provider)
 	switch sanitizedProvider {
 	case "kubernetes":
-		return NewKubernetes()
+		return NewKubernetes(targetPath)
 	case "docker":
-		return NewDocker()
+		return NewDocker(targetPath)
 	default:
 		logrus.Errorf("Unrecognized provider: %s. Defaulting to %s", sanitizedProvider, constants.DEFAULT_PROVIDER)
-		return NewKubernetes()
+		return NewKubernetes(targetPath)
 	}
 }

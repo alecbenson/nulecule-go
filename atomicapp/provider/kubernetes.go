@@ -20,9 +20,10 @@ type Kubernetes struct {
 }
 
 //Instantiates a new Kubernetes provider
-func NewKubernetes() *Kubernetes {
+func NewKubernetes(targetPath string) *Kubernetes {
 	provider := new(Kubernetes)
 	provider.Config = new(Config)
+	provider.targetPath = targetPath
 	return provider
 }
 
@@ -39,7 +40,11 @@ func (p *Kubernetes) Init() error {
 //Deploy the Kubernetes Provider
 func (p *Kubernetes) Deploy() error {
 	for _, artifact := range p.Artifacts() {
-		p.kubectlCmd(artifact.Path)
+		//sanitize the prefix from the file path
+		santitizedPath := utils.SanitizePath(artifact.Path)
+		//Form the absolute path of the artifact
+		fullPath := filepath.Join(p.targetPath, santitizedPath)
+		p.kubectlCmd(fullPath)
 	}
 	return nil
 }
