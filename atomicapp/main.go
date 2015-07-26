@@ -4,7 +4,6 @@ import (
 	"github.com/alecbenson/nulecule-go/atomicapp/cli"
 )
 
-
 func main() {
 	cli.InitGeneralFlags()
 

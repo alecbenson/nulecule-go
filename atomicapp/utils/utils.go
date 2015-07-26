@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"gopkg.in/yaml.v1"
 	"github.com/Sirupsen/logrus"
+	"gopkg.in/yaml.v1"
 )
 
 const (

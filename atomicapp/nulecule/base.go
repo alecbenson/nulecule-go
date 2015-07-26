@@ -75,9 +75,8 @@ type Constraint struct {
 }
 
 //New creates a new base Nulecule object and initializes the fields
-func (b *Base) New(targetPath string, ask bool) error {
+func (b *Base) New(targetPath string) error {
 	b.setTargetPath(targetPath)
-	b.Ask = ask
 	b.MainfileData = &Mainfile{}
 	return nil
 }

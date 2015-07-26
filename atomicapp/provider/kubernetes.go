@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/alecbenson/nulecule-go/atomicapp/utils"
 	"github.com/alecbenson/nulecule-go/atomicapp/constants"
+	"github.com/alecbenson/nulecule-go/atomicapp/utils"
 )
 
 //Kubernetes is a provider for kubernetes orchestration
@@ -40,10 +40,9 @@ func (p *Kubernetes) Init() error {
 //Deploy the Kubernetes Provider
 func (p *Kubernetes) Deploy() error {
 	for _, artifact := range p.Artifacts() {
-		//sanitize the prefix from the file path
-		santitizedPath := utils.SanitizePath(artifact.Path)
 		//Form the absolute path of the artifact
-		fullPath := filepath.Join(p.targetPath, santitizedPath)
+		base := filepath.Base(artifact.Path)
+		fullPath := filepath.Join(p.WorkDirectory(), base)
 		p.kubectlCmd(fullPath)
 	}
 	return nil
@@ -67,7 +66,7 @@ func (p *Kubernetes) findKubeCtlPath() (string, error) {
 			path = filepath.Join("/host", path)
 		}
 		if utils.PathExists(path) {
-			logrus.Infof("Found kubectl at %s", path)
+			logrus.Debugf("Found kubectl at %s", path)
 			return path, nil
 		}
 	}

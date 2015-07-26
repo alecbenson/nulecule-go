@@ -3,6 +3,7 @@ package cli
 import (
 	"flag"
 
+	"os"
 	"path/filepath"
 
 	"github.com/Sirupsen/logrus"
@@ -12,12 +13,42 @@ import (
 	"github.com/alecbenson/nulecule-go/atomicapp/utils"
 )
 
+//RunCommand returns an initialized CLI stop command
+func RunCommand() *Command {
+	return &Command{
+		Name:    "run",
+		Func:    runFunction(),
+		FlagSet: runFlagSet(),
+	}
+}
+
 func runFlagSet() *flag.FlagSet {
 	runFlagSet := flag.NewFlagSet("run", flag.PanicOnError)
 	runFlagSet.Bool("ask", false, "Ask for params even if the defaul value is provided")
 	runFlagSet.String("write", "", "A file which will contain anwsers provided in interactive mode")
 	runFlagSet.String("APP", "", "Path to the directory where the image is installed.")
 	return runFlagSet
+}
+
+func runFunction() func(cmd *Command) {
+	return func(cmd *Command) {
+		//Set up parameters
+		flags := cmd.FlagSet
+		answersFile := getVal(flags, "write").(string)
+		targetPath := getVal(flags, "APP").(string)
+		targetFile := filepath.Join(targetPath, constants.MAIN_FILE)
+		logrus.Debugf("RUN COMMAND: args are %v\n", targetFile)
+
+		//Start run sequence
+		base := &nulecule.Base{}
+		base.New(targetPath)
+		base.ReadMainFile(targetFile)
+		base.CheckSpecVersion()
+		base.LoadAnswersFromPath(answersFile)
+		base.CheckAllArtifacts()
+		deployGraph(base)
+		cleanWorkDirectory(targetPath)
+	}
 }
 
 //deployGraph starts the deploy process for all components
@@ -55,8 +86,8 @@ func processArtifacts(c nulecule.Component, provider, targetPath string) {
 	for _, artifactEntry := range c.Artifacts[provider] {
 		//Process inherited artifacts as well
 		if len(artifactEntry.Repo.Inherit) > 0 {
-			for _, inherited_provider := range artifactEntry.Repo.Inherit {
-				processArtifacts(c, inherited_provider, targetPath)
+			for _, inheritedProvider := range artifactEntry.Repo.Inherit {
+				processArtifacts(c, inheritedProvider, targetPath)
 			}
 		}
 		//sanitize the prefix from the file path
@@ -67,32 +98,11 @@ func processArtifacts(c nulecule.Component, provider, targetPath string) {
 	}
 }
 
-func runFunction() func(cmd *Command) {
-	return func(cmd *Command) {
-		//Set up parameters
-		flags := cmd.FlagSet
-		answersFile := getVal(flags, "write").(string)
-		targetPath := getVal(flags, "APP").(string)
-		ask := getVal(flags, "ask").(bool)
-		targetFile := filepath.Join(targetPath, constants.MAIN_FILE)
-		logrus.Debugf("RUN COMMAND: args are %v\n", targetFile)
-
-		//Start run sequence
-		base := &nulecule.Base{}
-		base.New(targetPath, ask)
-		base.ReadMainFile(targetFile)
-		base.CheckSpecVersion()
-		base.LoadAnswersFromPath(answersFile)
-		base.CheckAllArtifacts()
-		deployGraph(base)
-	}
-}
-
-//RunCommand returns an initialized CLI stop command
-func RunCommand() *Command {
-	return &Command{
-		Name:    "run",
-		Func:    runFunction(),
-		FlagSet: runFlagSet(),
+//cleanWorkDirectory removes the .workdir directory once the graph has been deployed.
+func cleanWorkDirectory(targetPath string) {
+	workDirectory := filepath.Join(targetPath, constants.WORKDIR)
+	if utils.PathExists(workDirectory) {
+		logrus.Debugf("Cleaning up work directory at %s\n", workDirectory)
+		os.RemoveAll(workDirectory)
 	}
 }

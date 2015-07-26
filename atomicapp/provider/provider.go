@@ -1,10 +1,11 @@
 package provider
 
 import (
-	"github.com/alecbenson/nulecule-go/atomicapp/nulecule"
 	"github.com/alecbenson/nulecule-go/atomicapp/constants"
-	
+	"github.com/alecbenson/nulecule-go/atomicapp/nulecule"
+
 	"github.com/Sirupsen/logrus"
+	"path/filepath"
 	"strings"
 )
 
@@ -62,9 +63,12 @@ func (c *Config) DryRun() bool {
 	return c.dryRun
 }
 
+func (c *Config) WorkDirectory() string {
+	return filepath.Join(c.targetPath, constants.WORKDIR)
+}
 
 //New instantiates the provider with the give name
-func New(provider string, targetPath string) Provider{
+func New(provider string, targetPath string) Provider {
 	sanitizedProvider := strings.ToLower(provider)
 	switch sanitizedProvider {
 	case "kubernetes":

@@ -8,9 +8,9 @@ import (
 	"github.com/alecbenson/nulecule-go/atomicapp/utils"
 
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
-	"path/filepath"
 )
 
 //Docker is a provider for Kubernetes
@@ -18,7 +18,7 @@ type Docker struct {
 	*Config
 }
 
-//Instantiates a new Kubernetes provider
+//NewDocker instantiates a new Kubernetes provider
 func NewDocker(targetPath string) *Docker {
 	provider := new(Docker)
 	provider.Config = new(Config)
@@ -36,10 +36,9 @@ func (p *Docker) Init() error {
 func (p *Docker) Deploy() error {
 	//Iterate through artifact entries for the docker provider
 	for _, artifact := range p.Artifacts() {
-		//sanitize the prefix from the file path
-		santitizedPath := utils.SanitizePath(artifact.Path)
 		//Form the absolute path of the artifact
-		fullPath := filepath.Join(p.targetPath, santitizedPath)
+		base := filepath.Base(artifact.Path)
+		fullPath := filepath.Join(p.WorkDirectory(), base)
 
 		if !utils.PathExists(fullPath) {
 			logrus.Errorf("No such docker artifact: %v\n", fullPath)
@@ -55,24 +54,24 @@ func (p *Docker) Deploy() error {
 
 //Issues the commands in the given file to docker
 func (p *Docker) dockerCmd(artifactFile string) error {
-		file, err := ioutil.ReadFile(artifactFile)
-		if err != nil {
-			logrus.Errorf("Error reading artifact file: %v\n", artifactFile)
-			return errors.New("Unable to find docker artifact file")
-		}
+	file, err := ioutil.ReadFile(artifactFile)
+	if err != nil {
+		logrus.Errorf("Error reading artifact file: %v\n", artifactFile)
+		return errors.New("Unable to find docker artifact file")
+	}
 
-		cmds := strings.Fields(string(file))
-		dockerCmd := exec.Command(cmds[0], cmds[1:]...)
+	cmds := strings.Fields(string(file))
+	dockerCmd := exec.Command(cmds[0], cmds[1:]...)
 
-		//In a dry run, we don't actually execute the commands, so we log and return here
-		if p.DryRun() {
-			logrus.Infof("DRY RUN: %s\n", dockerCmd.Args)
-			return nil
-		}
-
-		out, _ := dockerCmd.CombinedOutput()
-		logrus.Infof(string(out))
+	//In a dry run, we don't actually execute the commands, so we log and return here
+	if p.DryRun() {
+		logrus.Infof("DRY RUN: %s\n", dockerCmd.Args)
 		return nil
+	}
+
+	out, _ := dockerCmd.CombinedOutput()
+	logrus.Infof(string(out))
+	return nil
 }
 
 //Check to ensure that we have a valid version of docker before deploying

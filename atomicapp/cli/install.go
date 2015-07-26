@@ -2,7 +2,10 @@ package cli
 
 import (
 	"flag"
-	"fmt"
+	"github.com/Sirupsen/logrus"
+	"github.com/alecbenson/nulecule-go/atomicapp/constants"
+	"github.com/alecbenson/nulecule-go/atomicapp/nulecule"
+	"path/filepath"
 )
 
 func installFlagSet() *flag.FlagSet {
@@ -17,7 +20,17 @@ func installFlagSet() *flag.FlagSet {
 
 func installFunction() func(cmd *Command) {
 	return func(cmd *Command) {
-		fmt.Printf("INSTALL COMMAND\n")
+		//Set up parameters
+		flags := cmd.FlagSet
+		targetPath := getVal(flags, "APP").(string)
+		targetFile := filepath.Join(targetPath, constants.MAIN_FILE)
+		logrus.Debugf("INSTALL COMMAND: args are %v\n", targetFile)
+
+		//Start install sequence
+		base := &nulecule.Base{}
+		base.New(targetPath)
+		base.ReadMainFile(targetFile)
+		base.CheckSpecVersion()
 	}
 }
 
@@ -29,3 +42,17 @@ func InstallCommand() *Command {
 		FlagSet: installFlagSet(),
 	}
 }
+
+//The install process is as follows:
+//The nulecule file is parsed (loadMainFile)
+//If not a dry run...
+//pull the app from docker registry (or use a specific registry if given)
+//create a new instance of the container and copy the application-entity files of the container to a temp dir on the host
+//remove the contianer
+
+//verify that the user is not attempting to run install in an existing nulecule directory
+//If they are, complain and throw an error
+
+//check spec version and artifacts
+//if !nodeps,
+//read the mainfile data and call install() on all dependencies

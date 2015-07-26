@@ -1,17 +1,17 @@
 package nulecule
 
 import (
-	"errors"
-	"strings"
 	"bytes"
-	"io/ioutil"
-	"path/filepath"
+	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/alecbenson/nulecule-go/atomicapp/utils"
 	"github.com/alecbenson/nulecule-go/atomicapp/constants"
+	"github.com/alecbenson/nulecule-go/atomicapp/utils"
 )
 
 //IsExternal returns true if the component is an external resource, and false if the component is
@@ -44,8 +44,9 @@ func GetSourceImage(component Component) (string, error) {
 }
 
 //ApplyTemplate reads the file located at artifactPath and replaces all parameters
-//With those specified in the nulecule parameters objects
-//artifactPath is the path provided by the artifact
+//with those specified in the nulecule parameters objects
+//artifactPath is the path provided by the artifact. The data from this file
+//is loaded, and all variables ($var_name) get replaced with their correct values
 //TargetPath is the base directory to install the workdir directory into
 func ApplyTemplate(artifactPath string, targetPath string, params []Param) ([]byte, error) {
 	//Read the file
@@ -56,6 +57,7 @@ func ApplyTemplate(artifactPath string, targetPath string, params []Param) ([]by
 	//Replaces every instance of $param with
 	//the value provided in the nulecule file
 	for _, param := range params {
+		//We don't want to replace to/from empty values
 		if param.Name == "" || param.Default == "" {
 			continue
 		}
@@ -70,14 +72,14 @@ func ApplyTemplate(artifactPath string, targetPath string, params []Param) ([]by
 	return data, nil
 }
 
-//Saves a templated artifact to the .workdir directory.
+//SaveArtifact writes a templated artifact to the .workdir directory.
 //If .workdir does not exist, it is created.
 //data - a []byte of the templated file
 //name - the name of the file to write to
 func SaveArtifact(data []byte, targetPath, name string) error {
 	workdir := filepath.Join(targetPath, constants.WORKDIR)
 	//If the .workdir directory does not exist in targetPath, make it.
-	if !utils.PathExists(workdir){
+	if !utils.PathExists(workdir) {
 		logrus.Infof("Making workdir in %s", targetPath)
 		err := os.MkdirAll(workdir, 0700)
 		if err != nil {
