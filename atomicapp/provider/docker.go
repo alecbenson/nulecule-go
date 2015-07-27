@@ -76,8 +76,16 @@ func (p *Docker) dockerCmd(artifactFile string) error {
 
 //Check to ensure that we have a valid version of docker before deploying
 func (p *Docker) checkVersion() error {
-	daemonOut, _ := exec.Command("docker", "version", "--format", "'{{.Server.ApiVersion}}'").Output()
-	clientOut, _ := exec.Command("docker", "version", "--format", "'{{.Client.ApiVersion}}'").Output()
+	daemonCmd := exec.Command("docker", "version", "--format", "'{{.Server.ApiVersion}}'")
+	daemonOut, err := utils.CheckCommandOutput(daemonCmd, true)
+	if err != nil {
+		return err
+	}
+	clientCmd := exec.Command("docker", "version", "--format", "'{{.Client.ApiVersion}}'")
+	clientOut, err := utils.CheckCommandOutput(clientCmd, true)
+	if err != nil {
+		return err
+	}
 
 	daemonString := strings.Trim(string(daemonOut), " '\n")
 	clientString := strings.Trim(string(clientOut), " '\n")

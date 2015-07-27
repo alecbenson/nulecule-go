@@ -7,7 +7,8 @@ import (
 	"github.com/alecbenson/nulecule-go/atomicapp/logging"
 )
 
-//A general command can be run with any subcommand after it
+//InitGeneralFlags provides general configuration.
+//Any subcommand can be run after it
 func InitGeneralFlags() {
 	flag.Bool("version", false, "Displays the software version")
 	logLevel := flag.Int("log-level", 0, "0 - Quiet | 1 - Normal | 2 - Verbose logging")

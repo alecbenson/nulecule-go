@@ -29,7 +29,6 @@ func IsExternal(component Component) bool {
 //GetSourceImage fetches the sanitized source path of the image
 func GetSourceImage(component Component) (string, error) {
 	source := component.Source
-
 	if !IsExternal(component) {
 		logrus.Errorf("Cannot get external source of local component\n")
 		return "", errors.New("Cannot get source of local component")
@@ -49,7 +48,6 @@ func GetSourceImage(component Component) (string, error) {
 //is loaded, and all variables ($var_name) get replaced with their correct values
 //TargetPath is the base directory to install the workdir directory into
 func ApplyTemplate(artifactPath string, targetPath string, params []Param) ([]byte, error) {
-	//Read the file
 	data, err := ioutil.ReadFile(artifactPath)
 	if err != nil {
 		return data, err
@@ -80,7 +78,7 @@ func SaveArtifact(data []byte, targetPath, name string) error {
 	workdir := filepath.Join(targetPath, constants.WORKDIR)
 	//If the .workdir directory does not exist in targetPath, make it.
 	if !utils.PathExists(workdir) {
-		logrus.Infof("Making workdir in %s", targetPath)
+		logrus.Debugf("Making workdir in %s", targetPath)
 		err := os.MkdirAll(workdir, 0700)
 		if err != nil {
 			logrus.Fatalf("Failed to make work directory in %s", targetPath)
@@ -91,6 +89,7 @@ func SaveArtifact(data []byte, targetPath, name string) error {
 	//Create the file to write the template to
 	fullPath := filepath.Join(workdir, name)
 	templateFile, err := os.Create(fullPath)
+	defer templateFile.Close()
 	if err != nil {
 		logrus.Fatalf("Unable to create template file: %s", err)
 		return errors.New("Failed to create template file")
@@ -98,11 +97,10 @@ func SaveArtifact(data []byte, targetPath, name string) error {
 
 	//Write the data to the template file
 	defer templateFile.Close()
-	out, err := templateFile.Write(data)
+	_, err = templateFile.Write(data)
 	if err != nil {
 		logrus.Errorf("Failed to write to template file at %s", fullPath)
 		return errors.New("Failed to write to template file")
 	}
-	logrus.Debugf("Wrote %d bytes to the template file:\n %s", out, data)
 	return nil
 }

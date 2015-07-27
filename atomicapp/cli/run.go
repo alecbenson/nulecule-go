@@ -26,35 +26,35 @@ func runFlagSet() *flag.FlagSet {
 	runFlagSet := flag.NewFlagSet("run", flag.PanicOnError)
 	runFlagSet.Bool("ask", false, "Ask for params even if the defaul value is provided")
 	runFlagSet.String("write", "", "A file which will contain anwsers provided in interactive mode")
-	runFlagSet.String("APP", "", "Path to the directory where the image is installed.")
 	return runFlagSet
 }
 
-func runFunction() func(cmd *Command) {
-	return func(cmd *Command) {
+func runFunction() func(cmd *Command, args []string) {
+	return func(cmd *Command, args []string) {
 		//Set up parameters
 		flags := cmd.FlagSet
+		var target string
+		if len(args) > 0 {
+			target = args[0]
+		}
 		answersFile := getVal(flags, "write").(string)
-		targetPath := getVal(flags, "APP").(string)
-		targetFile := filepath.Join(targetPath, constants.MAIN_FILE)
-		logrus.Debugf("RUN COMMAND: args are %v\n", targetFile)
-
 		//Start run sequence
-		base := &nulecule.Base{}
-		base.New(targetPath)
-		base.ReadMainFile(targetFile)
+		defer cleanWorkDirectory(target)
+		base := nulecule.New(target)
+		if err := base.ReadMainFile(); err != nil {
+			return
+		}
 		base.CheckSpecVersion()
 		base.LoadAnswersFromPath(answersFile)
 		base.CheckAllArtifacts()
 		deployGraph(base)
-		cleanWorkDirectory(targetPath)
 	}
 }
 
 //deployGraph starts the deploy process for all components
 func deployGraph(b *nulecule.Base) {
 	graph := b.MainfileData.Graph
-	targetPath := b.TargetPath()
+	targetPath := b.Target()
 
 	if len(graph) == 0 {
 		logrus.Errorf("Graph not specified in %v file\n", constants.MAIN_FILE)
@@ -66,9 +66,8 @@ func deployGraph(b *nulecule.Base) {
 
 //processComponent iterates through the artifacts in the component and deploy them
 func processComponent(c nulecule.Component, targetPath string) {
-	//The provider class to deploy with
-	var prov provider.Provider
 	//Iterate through the component and deploy all of its providers
+	var prov provider.Provider
 	for providerName, artifactEntries := range c.Artifacts {
 		processArtifacts(c, providerName, targetPath)
 

@@ -100,8 +100,8 @@ func (p *Kubernetes) kubectlCmd(path string) error {
 		return nil
 	}
 
-	//Run the command
-	out, _ := kubeCmd.CombinedOutput()
-	logrus.Infof(string(out))
+	if _, err := utils.CheckCommandOutput(kubeCmd, false); err != nil {
+		return err
+	}
 	return nil
 }

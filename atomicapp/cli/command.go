@@ -8,7 +8,7 @@ import "flag"
 //flagset - the set of options that the command can be configured with
 type Command struct {
 	Name    string
-	Func    func(cmd *Command)
+	Func    func(cmd *Command, args []string)
 	FlagSet *flag.FlagSet
 }
 
@@ -20,7 +20,7 @@ func ParseCommands(commands []*Command) {
 		if cmd.Name == args[0] || cmd.Name == "general" && cmd.Func != nil {
 			cmd.FlagSet.Parse(args[1:])
 			args = cmd.FlagSet.Args()
-			cmd.Func(cmd)
+			cmd.Func(cmd, args)
 			return
 		}
 	}

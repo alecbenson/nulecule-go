@@ -7,13 +7,11 @@ import (
 
 func stopFlagSet() *flag.FlagSet {
 	stopFlagSet := flag.NewFlagSet("stop", flag.PanicOnError)
-	stopFlagSet.String("APP", "", "Path to the directory where the atomicapp"+
-		"is installed or an image containing atomicapp which should be stopped.")
 	return stopFlagSet
 }
 
-func stopFunction() func(cmd *Command) {
-	return func(cmd *Command) {
+func stopFunction() func(cmd *Command, args []string) {
+	return func(cmd *Command, args []string) {
 		fmt.Printf("STOP COMMAND\n")
 	}
 }

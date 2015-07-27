@@ -75,21 +75,24 @@ type Constraint struct {
 }
 
 //New creates a new base Nulecule object and initializes the fields
-func (b *Base) New(targetPath string) error {
+func New(targetPath string) *Base {
+	b := &Base{}
 	b.setTargetPath(targetPath)
 	b.MainfileData = &Mainfile{}
-	return nil
+	return b
 }
 
 //ReadMainFile will read the Nulecule file and fill the MainfileData field
-func (b *Base) ReadMainFile(filepath string) error {
+func (b *Base) ReadMainFile() error {
 	//Check for valid path
-	if !utils.PathExists(filepath) {
+	targetFile := filepath.Join(b.targetPath, constants.MAIN_FILE)
+	if !utils.PathExists(targetFile) {
+		logrus.Fatalf("Could not find %s file in %s", constants.MAIN_FILE, b.targetPath)
 		return errors.New("File does not exist")
 	}
 
 	//Read the file
-	file, err := ioutil.ReadFile(filepath)
+	file, err := ioutil.ReadFile(targetFile)
 	if err != nil {
 		return err
 	}
@@ -208,25 +211,24 @@ func providerAlreadyChecked(checkedProviders *[]string, provider string) bool {
 	return false
 }
 
-func (b *Base) setTargetPath(filepath string) error {
-	var err error
-	if filepath == "" {
-		logrus.Debugf("No target path provided, using current working directory")
-		filepath, err = os.Getwd()
+func (b *Base) setTargetPath(target string) error {
+	//If no target is specified or if the user specifies a '.',
+	//then use the current working directory
+	if target == "" || target == "." {
+		cwd, err := os.Getwd()
 		if err != nil {
 			logrus.Fatalf("Failed to get working directory")
 			return errors.New("Failed to set target path")
 		}
-	}
-	if utils.PathExists(filepath) {
-		b.targetPath = filepath
+		b.targetPath = cwd
 		return nil
 	}
-	logrus.Fatalf("user provided an invalid target path: %s", filepath)
-	return errors.New("Failed to set target path")
+	b.targetPath = target
+	return nil
 }
 
-func (b *Base) TargetPath() string {
+//Target is a getter for nulecule's target field
+func (b *Base) Target() string {
 	return b.targetPath
 }
 
