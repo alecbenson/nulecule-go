@@ -41,7 +41,6 @@ func CopyFile(source, dest string) error {
 //CopyDirectory copies the contents of the directory at source to dest
 func CopyDirectory(source, dest string) error {
 	var err error
-	logrus.Debugf("Copying from %s to %s", source, dest)
 	if !PathExists(source) {
 		logrus.Errorf("Cannot copy directory at %s: file does not exist", source)
 		return errors.New("Invalid directory")

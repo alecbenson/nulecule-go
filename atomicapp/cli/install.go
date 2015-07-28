@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -29,29 +30,36 @@ func installFlagSet() *flag.FlagSet {
 func installFunction() func(cmd *Command, args []string) {
 	return func(cmd *Command, args []string) {
 		//Set up parameters
-		if len(args) == 0 {
+		argCount := len(args)
+		if argCount <= 0 {
 			logrus.Fatalf("Please provide a repository to install from.")
 		}
-		target := args[0]
-
+		app := args[0]
+		flags := cmd.FlagSet
+		target := getVal(flags, "destination").(string)
+		b := nulecule.New(target, app)
 		//Start install sequence
-		base := nulecule.New(target)
-		if err := pullContainer(target); err != nil {
+		if err := pullContainer(app); err != nil {
 			return
 		}
 		//Copy files from the container to a temporary directory
-		tmpFiles, err := copyFromContainer(target)
+		tmpFiles, err := copyFromContainer(app)
 		if err != nil {
 			return
 		}
+		//Verify that the install target would not overwrite an existing nulecule app
+		if err := checkInstallOverwrite(tmpFiles, b.Target()); err != nil {
+			return
+		}
 		//Move container files to the install directory
-		wd, _ := os.Getwd()
-		err = utils.CopyDirectory(tmpFiles, wd)
+		err = utils.CopyDirectory(tmpFiles, b.Target())
 		if err != nil {
 			logrus.Errorf("Error copying directory: %s", err)
 			return
 		}
-		base.CheckSpecVersion()
+		b.ReadMainFile()
+		b.CheckSpecVersion()
+		b.CheckAllArtifacts()
 	}
 }
 
@@ -109,4 +117,30 @@ func copyFromContainer(image string) (string, error) {
 		return "", err
 	}
 	return tmpDirPath, nil
+}
+
+//checkInstallOverwrite returns a nil error if no nulecule app exists in the target directory.
+//If a nulecule app does exist in the target directory, it checks if it has a matching app ID and
+//if it does, allows the installation process to continue. If a different nulecule app has been found,
+//it warns the user that they are overwriting an existing app and returns an error status
+func checkInstallOverwrite(tmpTarget, dstTarget string) error {
+	if !utils.PathExists(filepath.Join(dstTarget, constants.MAIN_FILE)) {
+		logrus.Debugf("No existing app found in target directory, installation can continue")
+		return nil
+	}
+	//Parse the nulecule file in the target directory
+	targetBase := nulecule.New(dstTarget, "")
+	targetBase.ReadMainFile()
+	targetID := targetBase.MainfileData.ID
+
+	//Parse the nulecule file in the tmp directory
+	tmpBase := nulecule.New(tmpTarget, "")
+	tmpBase.ReadMainFile()
+	tmpID := tmpBase.MainfileData.ID
+
+	if targetID != tmpID {
+		logrus.Fatalf("You are trying to overwrite existing app %s with app %s - clear or change current directory.", targetID, tmpID)
+		return errors.New("Conflicting app install path")
+	}
+	return nil
 }

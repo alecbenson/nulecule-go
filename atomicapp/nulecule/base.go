@@ -44,12 +44,6 @@ type Component struct {
 	Artifacts map[string][]ArtifactEntry
 }
 
-//ArtifactEntry is a source control repository struct used to specify an artifact
-type ArtifactEntry struct {
-	Path string
-	Repo SrcControlRepo
-}
-
 type SrcControlRepo struct {
 	Inherit []string
 	Source  string
@@ -59,24 +53,9 @@ type SrcControlRepo struct {
 	Tag     string
 }
 
-//Param represents the Component parameters
-type Param struct {
-	Name        string
-	Description string
-	Constraints []Constraint
-	Default     string
-	Hidden      bool
-}
-
-//Constraint is a struct representing a constaint for a parameter object
-type Constraint struct {
-	AllowedPattern string
-	Description    string
-}
-
 //New creates a new base Nulecule object and initializes the fields
-func New(targetPath string) *Base {
-	b := &Base{}
+func New(targetPath, app string) *Base {
+	b := &Base{app: app}
 	b.setTargetPath(targetPath)
 	b.MainfileData = &Mainfile{}
 	return b
@@ -103,7 +82,7 @@ func (b *Base) ReadMainFile() error {
 		logrus.Errorf("Error parsing Nulecule file: %v", err)
 		return err
 	}
-	logrus.Debugf("Read following Nulecule file:\n\n %+v\n", *b.MainfileData)
+	logrus.Warnf("\n\n%+v\n\n", b.MainfileData)
 	return nil
 }
 
@@ -118,7 +97,7 @@ func (b *Base) CheckSpecVersion() error {
 	//Check for valid spec version
 	spec := b.MainfileData.Specversion
 	if spec == constants.NULECULESPECVERSION {
-		logrus.Debug("version check successful: specversion == %s", constants.NULECULESPECVERSION)
+		logrus.Debugf("version check successful: specversion == %s", constants.NULECULESPECVERSION)
 	} else {
 		logrus.Errorf("your version in %s file (%s) does not match supported version (%s)",
 			constants.MAIN_FILE, spec, constants.NULECULESPECVERSION)
@@ -214,7 +193,7 @@ func providerAlreadyChecked(checkedProviders *[]string, provider string) bool {
 func (b *Base) setTargetPath(target string) error {
 	//If no target is specified or if the user specifies a '.',
 	//then use the current working directory
-	if target == "" || target == "." {
+	if target == "" || !utils.PathExists(target) {
 		cwd, err := os.Getwd()
 		if err != nil {
 			logrus.Fatalf("Failed to get working directory")

@@ -1,10 +1,7 @@
 package nulecule
 
 import (
-	"bytes"
 	"errors"
-	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,6 +10,12 @@ import (
 	"github.com/alecbenson/nulecule-go/atomicapp/constants"
 	"github.com/alecbenson/nulecule-go/atomicapp/utils"
 )
+
+//ArtifactEntry is a source control repository struct used to specify an artifact
+type ArtifactEntry struct {
+	Path string
+	Repo SrcControlRepo
+}
 
 //IsExternal returns true if the component is an external resource, and false if the component is
 //A local resource
@@ -40,34 +43,6 @@ func GetSourceImage(component Component) (string, error) {
 
 	logrus.Errorf("Could not get source image from component source: %v\n", component)
 	return "", errors.New("Could not get source image")
-}
-
-//ApplyTemplate reads the file located at artifactPath and replaces all parameters
-//with those specified in the nulecule parameters objects
-//artifactPath is the path provided by the artifact. The data from this file
-//is loaded, and all variables ($var_name) get replaced with their correct values
-//TargetPath is the base directory to install the workdir directory into
-func ApplyTemplate(artifactPath string, targetPath string, params []Param) ([]byte, error) {
-	data, err := ioutil.ReadFile(artifactPath)
-	if err != nil {
-		return data, err
-	}
-	//Replaces every instance of $param with
-	//the value provided in the nulecule file
-	for _, param := range params {
-		//We don't want to replace to/from empty values
-		if param.Name == "" || param.Default == "" {
-			continue
-		}
-		name := bytes.Trim([]byte(param.Name), "$")
-		logrus.Debugf("Param name is %s", name)
-		value := bytes.Trim([]byte(param.Default), "$")
-		key := []byte(fmt.Sprintf("$%s", name))
-		data = bytes.Replace(data, key, value, -1)
-	}
-	name := filepath.Base(artifactPath)
-	SaveArtifact(data, targetPath, name)
-	return data, nil
 }
 
 //SaveArtifact writes a templated artifact to the .workdir directory.

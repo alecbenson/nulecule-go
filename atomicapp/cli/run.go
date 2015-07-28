@@ -32,15 +32,18 @@ func runFlagSet() *flag.FlagSet {
 func runFunction() func(cmd *Command, args []string) {
 	return func(cmd *Command, args []string) {
 		//Set up parameters
-		flags := cmd.FlagSet
-		var target string
+		var (
+			app    string
+			target string
+		)
 		if len(args) > 0 {
 			target = args[0]
 		}
+		flags := cmd.FlagSet
 		answersFile := getVal(flags, "write").(string)
 		//Start run sequence
 		defer cleanWorkDirectory(target)
-		base := nulecule.New(target)
+		base := nulecule.New(target, app)
 		if err := base.ReadMainFile(); err != nil {
 			return
 		}

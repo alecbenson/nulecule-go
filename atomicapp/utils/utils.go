@@ -104,8 +104,7 @@ func CheckCommandOutput(command *exec.Cmd, quiet bool) ([]byte, error) {
 	logrus.Debugf("Running command: %v", command.Args)
 	out, err := command.CombinedOutput()
 	if err != nil {
-		logrus.Debugf("Command failed: %v", command.Args)
-		logrus.Errorf("Failed to run command: %s", command.Stderr)
+		logrus.Errorf("Failed to run command %s: %s", command.Args, command.Stderr)
 		return []byte{}, err
 	}
 

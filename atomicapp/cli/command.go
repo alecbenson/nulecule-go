@@ -1,6 +1,10 @@
 package cli
 
-import "flag"
+import (
+	"flag"
+
+	"github.com/Sirupsen/logrus"
+)
 
 //A subcommand is used to represent a specific action in atomic: run, stop, install, etc
 //name - the name of the subcommand
@@ -30,6 +34,7 @@ func ParseCommands(commands []*Command) {
 func getVal(set *flag.FlagSet, arg string) interface{} {
 	requestedFlag := set.Lookup(arg)
 	if requestedFlag == nil {
+		logrus.Debugf("Could not find requested flag: %s", arg)
 		return nil
 	}
 	return requestedFlag.Value.(flag.Getter).Get()
