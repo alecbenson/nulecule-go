@@ -17,6 +17,15 @@ type ArtifactEntry struct {
 	Repo SrcControlRepo
 }
 
+type SrcControlRepo struct {
+	Inherit []string
+	Source  string
+	Path    string
+	Type    string
+	Branch  string
+	Tag     string
+}
+
 //IsExternal returns true if the component is an external resource, and false if the component is
 //A local resource
 func IsExternal(component Component) bool {

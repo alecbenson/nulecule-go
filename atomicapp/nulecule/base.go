@@ -44,15 +44,6 @@ type Component struct {
 	Artifacts map[string][]ArtifactEntry
 }
 
-type SrcControlRepo struct {
-	Inherit []string
-	Source  string
-	Path    string
-	Type    string
-	Branch  string
-	Tag     string
-}
-
 //New creates a new base Nulecule object and initializes the fields
 func New(targetPath, app string) *Base {
 	b := &Base{app: app}
