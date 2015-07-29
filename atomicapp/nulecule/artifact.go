@@ -30,7 +30,7 @@ type SrcControlRepo struct {
 //A local resource
 func IsExternal(component Component) bool {
 	if len(component.Artifacts) == 0 {
-		return false
+		return true
 	}
 	if component.Source == "" {
 		return false

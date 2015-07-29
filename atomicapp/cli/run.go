@@ -96,8 +96,8 @@ func processArtifacts(c *nulecule.Component, provider, targetPath string, ask bo
 		//sanitize the prefix from the file path
 		santitizedPath := utils.SanitizePath(artifactEntry.Path)
 		//Form the absolute path of the artifact
-		fullPath := filepath.Join(targetPath, santitizedPath)
-		nulecule.ApplyTemplate(fullPath, targetPath, c, ask)
+		artifactPath := filepath.Join(targetPath, santitizedPath)
+		nulecule.ApplyTemplate(artifactPath, targetPath, c, ask)
 	}
 }
 

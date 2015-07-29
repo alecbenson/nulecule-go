@@ -61,7 +61,6 @@ func (b *Base) ReadMainFile() error {
 		return errors.New("File does not exist")
 	}
 
-	//Read the file
 	file, err := ioutil.ReadFile(targetFile)
 	if err != nil {
 		return err

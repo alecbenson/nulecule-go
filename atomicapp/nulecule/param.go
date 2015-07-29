@@ -31,7 +31,7 @@ type Constraint struct {
 func checkConstraints(param *Param) (bool, error) {
 	value := param.Default
 	for _, constraint := range param.Constraints {
-		pattern := constraint.AllowedPattern
+		pattern := fmt.Sprintf("^%s$", constraint.AllowedPattern)
 		valid, err := regexp.MatchString(pattern, value)
 		if err != nil {
 			logrus.Errorf("Error checking constraint for parameter %s: %s", value, err)
@@ -55,6 +55,20 @@ func ApplyTemplate(artifactPath string, targetPath string, c *Component, ask boo
 	if err != nil {
 		return data, err
 	}
+
+	data, err = makeTemplateReplacements(data, c, ask)
+	if err != nil {
+		logrus.Errorf("Error applying template: %s", err)
+	}
+
+	name := filepath.Base(artifactPath)
+	SaveArtifact(data, targetPath, name)
+	return data, nil
+}
+
+//makeTemplateReplacements is a helper function to ApplyTemplate that will take in the artifact file
+//And output a template with replacements made
+func makeTemplateReplacements(data []byte, c *Component, ask bool) ([]byte, error) {
 	//Replaces every instance of $param with
 	//the value provided in the nulecule file
 	for index := range c.Params {
@@ -89,12 +103,10 @@ func ApplyTemplate(artifactPath string, targetPath string, c *Component, ask boo
 	}
 
 	//Find any last unresolved parameters and replace them with user input values
-	if data, err = askMissingParams(data); err != nil {
+	if data, err := askMissingParams(data); err != nil {
 		logrus.Fatalf("Failed to ask for missing parameters: %s", err)
 		return data, err
 	}
-	name := filepath.Base(artifactPath)
-	SaveArtifact(data, targetPath, name)
 	return data, nil
 }
 
@@ -154,7 +166,3 @@ func askForParam(param *Param) ([]byte, error) {
 	param.AskedFor = true
 	return value, nil
 }
-
-/*
-TODO: When a parameter is asked for, we need to make sure that it doesn't get asked for repeatedly as each artifact gets templated
-*/
