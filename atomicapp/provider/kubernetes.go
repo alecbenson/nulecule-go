@@ -19,7 +19,7 @@ type Kubernetes struct {
 	KubeCtl          string
 }
 
-//Instantiates a new Kubernetes provider
+//NewKubernetes instantiates a new Kubernetes provider
 func NewKubernetes(targetPath string) *Kubernetes {
 	provider := new(Kubernetes)
 	provider.Config = new(Config)

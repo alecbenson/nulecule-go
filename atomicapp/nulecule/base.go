@@ -2,13 +2,12 @@ package nulecule
 
 import (
 	"errors"
-	"path/filepath"
-
-	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/alecbenson/nulecule-go/atomicapp/constants"
+	"github.com/alecbenson/nulecule-go/atomicapp/parser"
 	"github.com/alecbenson/nulecule-go/atomicapp/utils"
 	"gopkg.in/yaml.v1"
 )
@@ -17,15 +16,11 @@ import (
 //It is set by the atomicapp subcommands
 type Base struct {
 	AnswersData        string
-	ParamsData         string
 	MainfileData       *Mainfile
 	targetPath         string
 	Nodeps             bool
-	AppID              string
 	AppPath            string
-	provider           string
 	app                string
-	Ask                bool
 	WriteSampleAnswers bool
 }
 
@@ -61,13 +56,9 @@ func (b *Base) ReadMainFile() error {
 		return errors.New("File does not exist")
 	}
 
-	file, err := ioutil.ReadFile(targetFile)
-	if err != nil {
-		return err
-	}
-
 	//Attempt to parse
-	err = yaml.Unmarshal(file, b.MainfileData)
+	p := parser.NewParser(targetFile)
+	err := p.Unmarshal(b.MainfileData)
 	if err != nil {
 		logrus.Errorf("Error parsing Nulecule file: %v", err)
 		return err

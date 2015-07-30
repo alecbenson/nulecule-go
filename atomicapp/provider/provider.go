@@ -43,26 +43,27 @@ func (c *Config) addCLIPaths(paths ...string) {
 	c.cliPath = append(paths, c.cliPath...)
 }
 
-//Gets a list of paths to search for the provider executable
+//CLIPath gets a list of paths to search for the provider executable
 func (c *Config) CLIPath() []string {
 	return c.cliPath
 }
 
-//Gets the list of artifacts belonging to the provider
+//Artifacts gets the list of artifacts belonging to the provider
 func (c *Config) Artifacts() []nulecule.ArtifactEntry {
 	return c.artifacts
 }
 
-//Sets the list of artifacts belonging to the provider
+//SetArtifacts sets the list of artifacts belonging to the provider
 func (c *Config) SetArtifacts(artifacts []nulecule.ArtifactEntry) {
 	c.artifacts = artifacts
 }
 
-//Gets the dry run value. In a dry run, no commands are actually run.
+//DryRun the dry run value. In a dry run, no commands are actually run.
 func (c *Config) DryRun() bool {
 	return c.dryRun
 }
 
+//WorkDirectory returns the absolute path to the .workdir directory
 func (c *Config) WorkDirectory() string {
 	return filepath.Join(c.targetPath, constants.WORKDIR)
 }

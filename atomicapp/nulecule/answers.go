@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/alecbenson/nulecule-go/atomicapp/constants"
+	"github.com/alecbenson/nulecule-go/atomicapp/parser"
 	"github.com/alecbenson/nulecule-go/atomicapp/utils"
 )
 
@@ -15,15 +16,14 @@ type Answers struct {
 //LoadAnswers reads the answers from the provided path
 func (b *Base) LoadAnswersFromPath(path string) (Answers, error) {
 	result := Answers{}
-
-	//Ensure that the path points to a valid file or directory
 	if !utils.PathExists(path) {
 		return result, errors.New("Bad answers filepath")
 	}
+	p := parser.NewParser(path)
 
 	//If a file was provided...
 	if utils.PathIsFile(path) {
-		err := utils.ParseYAMLFile(path, &result)
+		err := p.Unmarshal(&result)
 		if err != nil {
 			return result, errors.New("Failed to parse file")
 		}
@@ -37,7 +37,7 @@ func (b *Base) LoadAnswersFromPath(path string) (Answers, error) {
 			return result, errors.New("Failed to read answers from path")
 		}
 		//..try to parse the file
-		err := utils.ParseYAMLFile(path, &result)
+		err := p.Unmarshal(&result)
 		if err != nil {
 			return result, errors.New("Failed to parse file")
 		}

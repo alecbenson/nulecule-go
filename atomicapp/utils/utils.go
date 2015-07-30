@@ -3,16 +3,13 @@ package utils
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/Sirupsen/logrus"
-	"gopkg.in/yaml.v1"
 )
 
 const (
@@ -68,33 +65,6 @@ func SanitizePath(url string) string {
 		return strings.TrimPrefix(url, FILE_PREFIX)
 	}
 	return url
-}
-
-//ParseYAMLFile will read in a path to a yaml file and parse to a map
-func ParseYAMLFile(filepath string, result interface{}) error {
-
-	//Check for an instantiated map
-	if result == nil {
-		return errors.New("Uninstantiated map proved")
-	}
-
-	//Check for valid path
-	if !PathExists(filepath) {
-		return errors.New("File does not exist")
-	}
-
-	//Read the file
-	file, err := ioutil.ReadFile(filepath)
-	if err != nil {
-		return err
-	}
-
-	//Attempt to parse
-	err = yaml.Unmarshal(file, result)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 //CheckCommandOutput runs the specified command and checks the output for errors.
