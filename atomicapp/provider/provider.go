@@ -4,15 +4,17 @@ import (
 	"github.com/alecbenson/nulecule-go/atomicapp/constants"
 	"github.com/alecbenson/nulecule-go/atomicapp/nulecule"
 
-	"github.com/Sirupsen/logrus"
 	"path/filepath"
 	"strings"
+
+	"github.com/Sirupsen/logrus"
 )
 
 //Provider defines functions that a provider plugin must include
 type Provider interface {
 	Init() error
 	Deploy() error
+	Undeploy() error
 
 	CLIPath() []string
 	Artifacts() []nulecule.ArtifactEntry

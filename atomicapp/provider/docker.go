@@ -52,6 +52,10 @@ func (p *Docker) Deploy() error {
 	return nil
 }
 
+func (p *Docker) Undeploy() error {
+	return nil
+}
+
 //Issues the commands in the given file to docker
 func (p *Docker) dockerCmd(artifactFile string) error {
 	file, err := ioutil.ReadFile(artifactFile)

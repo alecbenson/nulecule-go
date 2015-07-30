@@ -3,7 +3,6 @@ package cli
 import (
 	"flag"
 
-	"os"
 	"path/filepath"
 
 	"github.com/Sirupsen/logrus"
@@ -43,7 +42,6 @@ func runFunction() func(cmd *Command, args []string) {
 		ask := getVal(flags, "ask").(bool)
 		answersFile := getVal(flags, "write").(string)
 		//Start run sequence
-		defer cleanWorkDirectory(target)
 		base := nulecule.New(target, app)
 		if err := base.ReadMainFile(); err != nil {
 			return
@@ -98,14 +96,5 @@ func processArtifacts(c *nulecule.Component, provider, targetPath string, ask bo
 		//Form the absolute path of the artifact
 		artifactPath := filepath.Join(targetPath, santitizedPath)
 		nulecule.ApplyTemplate(artifactPath, targetPath, c, ask)
-	}
-}
-
-//cleanWorkDirectory removes the .workdir directory once the graph has been deployed.
-func cleanWorkDirectory(targetPath string) {
-	workDirectory := filepath.Join(targetPath, constants.WORKDIR)
-	if utils.PathExists(workDirectory) {
-		logrus.Debugf("Cleaning up work directory at %s\n", workDirectory)
-		os.RemoveAll(workDirectory)
 	}
 }

@@ -63,7 +63,6 @@ func (b *Base) ReadMainFile() error {
 		logrus.Errorf("Error parsing Nulecule file: %v", err)
 		return err
 	}
-	logrus.Warnf("\n\n%+v\n\n", b.MainfileData)
 	return nil
 }
 
