@@ -8,7 +8,6 @@ import (
 	"regexp"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/alecbenson/nulecule-go/atomicapp/constants"
 )
 
 //Param represents the Component parameters
@@ -56,7 +55,7 @@ func (b *Base) applyTemplate(artifactPath string, c *Component, ask bool) ([]byt
 		return data, err
 	}
 
-	data, err = makeTemplateReplacements(data, c, ask)
+	data, err = b.makeTemplateReplacements(data, c, ask)
 	if err != nil {
 		logrus.Errorf("Error applying template: %s", err)
 	}
@@ -68,7 +67,7 @@ func (b *Base) applyTemplate(artifactPath string, c *Component, ask bool) ([]byt
 
 //makeTemplateReplacements is a helper function to ApplyTemplate that will take in the artifact file
 //And output a template with replacements made
-func makeTemplateReplacements(data []byte, c *Component, ask bool) ([]byte, error) {
+func (b *Base) makeTemplateReplacements(data []byte, c *Component, ask bool) ([]byte, error) {
 	//Replaces every instance of $param with
 	//the value provided in the nulecule file
 	for index := range c.Params {
@@ -76,10 +75,9 @@ func makeTemplateReplacements(data []byte, c *Component, ask bool) ([]byte, erro
 		//We run strip on $ just in case one exists.
 		name := bytes.Trim([]byte(param.Name), "$")
 		key := []byte(fmt.Sprintf("$%s", name))
-		value := bytes.Trim([]byte(param.Default), "$")
-		if name == nil || value == nil {
-			continue
-		}
+		answerVal, paramInAnswers := b.getParamValueFromAnswers(c, param)
+		value := []byte(answerVal)
+		ask := ask && !paramInAnswers
 
 		//If the user wants to be asked for all parameters, do so
 		if ask && !param.AskedFor {
@@ -103,14 +101,26 @@ func makeTemplateReplacements(data []byte, c *Component, ask bool) ([]byte, erro
 	}
 
 	//Find any last unresolved parameters and replace them with user input values
-	if data, err := askMissingParams(data); err != nil {
+	data, err := askMissingParams(data)
+	if err != nil {
 		logrus.Fatalf("Failed to ask for missing parameters: %s", err)
 		return data, err
 	}
 	return data, nil
 }
 
-//Ask mising params will search each artifact for
+//Checks to see if the answers file has a value for the parameter. If it does not, return the parameter default
+func (b *Base) getParamValueFromAnswers(c *Component, p *Param) (string, bool) {
+	answers := b.AnswersData[c.Name]
+	if val, ok := answers[p.Name]; ok {
+		if val != "" {
+			return val, ok
+		}
+	}
+	return p.Default, false
+}
+
+//askMissingParams will search each artifact for
 //unresolved parameters and ask the user to provide a value
 //It will return a []byte containing artifact data with replacements inserted
 func askMissingParams(data []byte) ([]byte, error) {
@@ -120,7 +130,10 @@ func askMissingParams(data []byte) ([]byte, error) {
 	//Iterate through matches...
 	for _, param := range unknownParams {
 		name := bytes.Trim([]byte(param), "$")
-		formattedParam := Param{Name: string(name)}
+		formattedParam := Param{
+			Name:        string(name),
+			Description: "No description available",
+		}
 
 		//Query user for a valid parameter value...
 		value, err := askForParam(&formattedParam)
@@ -140,15 +153,10 @@ func askForParam(param *Param) ([]byte, error) {
 		validated bool
 		value     []byte
 	)
-	//Set the query description
-	description := param.Description
-	if description == "" {
-		description = fmt.Sprintf("No description available. Add this parameter to your %s file", constants.MAIN_FILE)
-	}
 
 	//Query until the user gives us valid input
 	for !validated {
-		fmt.Printf("Enter a value for %s (%s - default: %s): ", param.Name, description, param.Default)
+		fmt.Printf("Enter a value for %s (%s - default: %s): ", param.Name, param.Description, param.Default)
 		if _, err := fmt.Scanln(&value); err != nil {
 			continue
 		}
@@ -164,5 +172,13 @@ func askForParam(param *Param) ([]byte, error) {
 	}
 	//Don't ask the user to provide a value for this param again
 	param.AskedFor = true
+	return value, nil
+}
+
+func (b *Base) getParamValue(p Param) (string, error) {
+	var value string
+	if p.Default != "" {
+		value = p.Default
+	}
 	return value, nil
 }

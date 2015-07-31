@@ -1,11 +1,12 @@
 package nulecule
 
 import (
+	"path/filepath"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/alecbenson/nulecule-go/atomicapp/constants"
 	"github.com/alecbenson/nulecule-go/atomicapp/provider"
 	"github.com/alecbenson/nulecule-go/atomicapp/utils"
-	"path/filepath"
 )
 
 //Run starts the nulecule run process to deploy a clustered application
@@ -13,8 +14,9 @@ func (b *Base) Run(ask bool, answersFile string) {
 	if err := b.ReadMainFile(); err != nil {
 		return
 	}
+	b.setAnswersDir(answersFile)
 	b.CheckSpecVersion()
-	b.LoadAnswersFromPath(answersFile)
+	b.LoadAnswers()
 	b.CheckAllArtifacts()
 	b.deployGraph(ask, answersFile)
 }
@@ -64,7 +66,7 @@ func (b *Base) deployGraph(ask bool, answersFile string) {
 		if IsExternal(c) {
 			externalDir := b.GetExternallAppDirectory(c)
 			externalBase := New(externalDir, "")
-			externalBase.Run(ask, answersFile)
+			externalBase.Run(ask, b.Target())
 		}
 		b.processComponent(&c, ask)
 	}

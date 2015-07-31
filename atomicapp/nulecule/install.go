@@ -34,6 +34,7 @@ func (b *Base) Install() error {
 	b.CheckSpecVersion()
 	b.CheckAllArtifacts()
 	b.InstallDependencies()
+	b.WriteAnswersSample()
 	return nil
 }
 
@@ -41,8 +42,9 @@ func (b *Base) Install() error {
 func (b *Base) InstallDependencies() error {
 	components := b.MainfileData.Graph
 	for _, c := range components {
-		b.UpdateAnswers(c)
 		if !IsExternal(c) {
+			//Save the parameters to the answer data.
+			b.updateComponentAnswers(c)
 			continue
 		}
 		logrus.Infof("Installing dependency: %s", c.Name)
@@ -55,6 +57,7 @@ func (b *Base) InstallDependencies() error {
 			return err
 		}
 		externalBase := New(externalDir, image)
+		externalBase.setAnswersDir(b.Target())
 		if err := externalBase.Install(); err != nil {
 			logrus.Panicf("Failed to install dependency: %s", err)
 			return err
@@ -82,7 +85,7 @@ func copyFromContainer(image string) (string, error) {
 		return "", err
 	}
 	tmpDirPath := filepath.Join(os.TempDir(), tmpDirName)
-	//Copy the contents to the temporary application-entity directory (usually /tmp/nulecule-xxxxxx)
+	//Copy the contents to the temporary application-entity directory (/tmp/nulecule-xxxxxx)
 	if err := container.Copy(containerName, constants.APP_ENT_PATH, tmpDirPath); err != nil {
 		return "", err
 	}

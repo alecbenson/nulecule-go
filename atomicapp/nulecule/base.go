@@ -15,7 +15,8 @@ import (
 //Base contains a set of nulecule config properties
 //It is set by the atomicapp subcommands
 type Base struct {
-	AnswersData        map[string][]Param
+	AnswersData        map[string]Answers
+	answersDir         string
 	MainfileData       *Mainfile
 	targetPath         string
 	Nodeps             bool
@@ -43,8 +44,9 @@ type Component struct {
 func New(targetPath, app string) *Base {
 	b := &Base{app: app}
 	b.setTargetPath(targetPath)
+	b.setAnswersDir(b.Target())
 	b.MainfileData = &Mainfile{}
-	b.AnswersData = make(map[string][]Param)
+	b.AnswersData = make(map[string]Answers)
 	return b
 }
 
@@ -189,7 +191,27 @@ func (b *Base) setTargetPath(target string) error {
 
 //Target is a getter for nulecule base's target field
 func (b *Base) Target() string {
+	if b.targetPath == "" {
+		b.setTargetPath("")
+	}
 	return b.targetPath
+}
+
+//AnswersDir returns the base directory in which the answers file lives
+func (b *Base) AnswersDir() string {
+	return b.answersDir
+}
+
+func (b *Base) setAnswersDir(answersDir string) error {
+	if !utils.PathExists(answersDir) {
+		if answersDir != "" {
+			logrus.Warnf("Invalid answers directory provided: '%s'. Using '%s' instead", answersDir, b.Target())
+		}
+		b.answersDir = b.Target()
+		return errors.New("Using target path as answers directory")
+	}
+	b.answersDir = answersDir
+	return nil
 }
 
 //App is a getter for the nulecule base's app field

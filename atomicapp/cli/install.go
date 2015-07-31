@@ -28,7 +28,6 @@ func installFunction() func(cmd *Command, args []string) {
 		target := getVal(flags, "destination").(string)
 		b := nulecule.New(target, app)
 		b.Install()
-		b.WriteAnswersSample()
 	}
 }
 
