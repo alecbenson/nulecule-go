@@ -2,14 +2,7 @@ package cli
 
 import (
 	"flag"
-
-	"path/filepath"
-
-	"github.com/Sirupsen/logrus"
-	"github.com/alecbenson/nulecule-go/atomicapp/constants"
 	"github.com/alecbenson/nulecule-go/atomicapp/nulecule"
-	"github.com/alecbenson/nulecule-go/atomicapp/provider"
-	"github.com/alecbenson/nulecule-go/atomicapp/utils"
 )
 
 //RunCommand returns an initialized CLI stop command
@@ -43,58 +36,6 @@ func runFunction() func(cmd *Command, args []string) {
 		answersFile := getVal(flags, "write").(string)
 		//Start run sequence
 		base := nulecule.New(target, app)
-		if err := base.ReadMainFile(); err != nil {
-			return
-		}
-		base.CheckSpecVersion()
-		base.LoadAnswersFromPath(answersFile)
-		base.CheckAllArtifacts()
-		deployGraph(base, ask)
-	}
-}
-
-//deployGraph starts the deploy process for all components
-func deployGraph(b *nulecule.Base, ask bool) {
-	graph := b.MainfileData.Graph
-	targetPath := b.Target()
-
-	if len(graph) == 0 {
-		logrus.Errorf("Graph not specified in %v file\n", constants.MAIN_FILE)
-	}
-	for _, component := range graph {
-		processComponent(&component, targetPath, ask)
-	}
-}
-
-//processComponent iterates through the artifacts in the component and deploy them
-func processComponent(c *nulecule.Component, targetPath string, ask bool) {
-	//Iterate through the component and deploy all of its providers
-	var prov provider.Provider
-	for providerName, artifactEntries := range c.Artifacts {
-		processArtifacts(c, providerName, targetPath, ask)
-
-		logrus.Infof("Deploying provider: %s...", providerName)
-		prov = provider.New(providerName, targetPath)
-		prov.SetArtifacts(artifactEntries)
-		prov.Init()
-		prov.Deploy()
-	}
-}
-
-//processArtifacts iterates through each artifact entry
-//It then substitutes the Nulecule parameters in and saves them in the workdir
-func processArtifacts(c *nulecule.Component, provider, targetPath string, ask bool) {
-	for _, artifactEntry := range c.Artifacts[provider] {
-		//Process inherited artifacts as well
-		if len(artifactEntry.Repo.Inherit) > 0 {
-			for _, inheritedProvider := range artifactEntry.Repo.Inherit {
-				processArtifacts(c, inheritedProvider, targetPath, ask)
-			}
-		}
-		//sanitize the prefix from the file path
-		santitizedPath := utils.SanitizePath(artifactEntry.Path)
-		//Form the absolute path of the artifact
-		artifactPath := filepath.Join(targetPath, santitizedPath)
-		nulecule.ApplyTemplate(artifactPath, targetPath, c, ask)
+		base.Run(ask, answersFile)
 	}
 }

@@ -23,7 +23,7 @@ type Param struct {
 
 //Constraint is a struct representing a constaint for a parameter object
 type Constraint struct {
-	AllowedPattern string
+	AllowedPattern string `json:"allowed_pattern",yaml:"allowed_pattern"`
 	Description    string
 }
 
@@ -50,7 +50,7 @@ func checkConstraints(param *Param) (bool, error) {
 //artifactPath is the path provided by the artifact. The data from this file
 //is loaded, and all variables ($var_name) get replaced with their correct values
 //TargetPath is the base directory to install the workdir directory into
-func ApplyTemplate(artifactPath string, targetPath string, c *Component, ask bool) ([]byte, error) {
+func (b *Base) applyTemplate(artifactPath string, c *Component, ask bool) ([]byte, error) {
 	data, err := ioutil.ReadFile(artifactPath)
 	if err != nil {
 		return data, err
@@ -62,7 +62,7 @@ func ApplyTemplate(artifactPath string, targetPath string, c *Component, ask boo
 	}
 
 	name := filepath.Base(artifactPath)
-	SaveArtifact(data, targetPath, name)
+	SaveArtifact(data, b.Target(), name)
 	return data, nil
 }
 

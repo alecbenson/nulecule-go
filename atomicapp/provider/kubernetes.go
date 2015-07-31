@@ -25,6 +25,7 @@ type kubeConfig struct {
 	Kind     string
 	Metadata metadata
 }
+
 type metadata struct {
 	Name string
 }
@@ -51,7 +52,7 @@ func (p *Kubernetes) Init() error {
 func (p *Kubernetes) Deploy() error {
 	for _, artifact := range p.Artifacts() {
 		//Form the absolute path of the artifact
-		base := filepath.Base(artifact.Path)
+		base := filepath.Base(artifact)
 		fullPath := filepath.Join(p.WorkDirectory(), base)
 		p.kubectlCmd(fullPath)
 	}
@@ -61,7 +62,7 @@ func (p *Kubernetes) Deploy() error {
 //Undeploy the kubernetes provider and reset replication controllers
 func (p *Kubernetes) Undeploy() error {
 	for _, artifact := range p.Artifacts() {
-		base := filepath.Base(artifact.Path)
+		base := filepath.Base(artifact)
 		fullPath := filepath.Join(p.WorkDirectory(), base)
 
 		markupParser := parser.NewParser(fullPath)

@@ -107,3 +107,14 @@ func GetBaseImageName(image string) string {
 	baseName := filepath.Base(image)
 	return strings.Split(baseName, ":")[0]
 }
+
+//WriteToFile opens the specified file, wrties the data to the file, and closes
+func WriteToFile(data []byte, f *os.File) error {
+	defer f.Close()
+	_, err := f.Write(data)
+	if err != nil {
+		logrus.Errorf("Failed to write to file: %s", err)
+		return err
+	}
+	return nil
+}

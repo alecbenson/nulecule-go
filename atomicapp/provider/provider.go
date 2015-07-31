@@ -2,7 +2,6 @@ package provider
 
 import (
 	"github.com/alecbenson/nulecule-go/atomicapp/constants"
-	"github.com/alecbenson/nulecule-go/atomicapp/nulecule"
 
 	"path/filepath"
 	"strings"
@@ -17,8 +16,8 @@ type Provider interface {
 	Undeploy() error
 
 	CLIPath() []string
-	Artifacts() []nulecule.ArtifactEntry
-	SetArtifacts(artifacts []nulecule.ArtifactEntry)
+	Artifacts() []string
+	SetArtifacts(artifacts []string)
 	DryRun() bool
 	addCLIPaths(paths ...string)
 }
@@ -27,7 +26,7 @@ type Provider interface {
 //each supported provider
 type Config struct {
 	//A list of artifacts for the provider to deploy
-	artifacts []nulecule.ArtifactEntry
+	artifacts []string
 	//If true, run in Dry run mode.
 	dryRun bool
 	//A list of paths to check when trying to run the provider program
@@ -51,12 +50,12 @@ func (c *Config) CLIPath() []string {
 }
 
 //Artifacts gets the list of artifacts belonging to the provider
-func (c *Config) Artifacts() []nulecule.ArtifactEntry {
+func (c *Config) Artifacts() []string {
 	return c.artifacts
 }
 
 //SetArtifacts sets the list of artifacts belonging to the provider
-func (c *Config) SetArtifacts(artifacts []nulecule.ArtifactEntry) {
+func (c *Config) SetArtifacts(artifacts []string) {
 	c.artifacts = artifacts
 }
 
@@ -78,6 +77,8 @@ func New(provider string, targetPath string) Provider {
 		return NewKubernetes(targetPath)
 	case "docker":
 		return NewDocker(targetPath)
+	case "openshift":
+		return NewOpenshift(targetPath)
 	default:
 		logrus.Errorf("Unrecognized provider: %s. Defaulting to %s", sanitizedProvider, constants.DEFAULT_PROVIDER)
 		return NewKubernetes(targetPath)

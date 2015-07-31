@@ -37,7 +37,7 @@ func (p *Docker) Deploy() error {
 	//Iterate through artifact entries for the docker provider
 	for _, artifact := range p.Artifacts() {
 		//Form the absolute path of the artifact
-		base := filepath.Base(artifact.Path)
+		base := filepath.Base(artifact)
 		fullPath := filepath.Join(p.WorkDirectory(), base)
 
 		if !utils.PathExists(fullPath) {

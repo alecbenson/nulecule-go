@@ -54,11 +54,25 @@ func GetSourceImage(component Component) (string, error) {
 	return "", errors.New("Could not get source image")
 }
 
-//SaveArtifact writes a templated artifact to the .workdir directory.
-//If .workdir does not exist, it is created.
-//data - a []byte of the templated file
-//name - the name of the file to write to
-func SaveArtifact(data []byte, targetPath, name string) error {
+//GetExternalAppDirectory returns the directory in which ane external app is installed to
+func (b *Base) makeExternalAppDirectory(c Component) (string, error) {
+	fp := b.GetExternallAppDirectory(c)
+	err := os.MkdirAll(fp, 0700)
+	if err != nil {
+		logrus.Fatalf("Failed to make external app directory in %s", b.Target())
+		return "", err
+	}
+	return fp, nil
+}
+
+//GetExternallAppDirectory returns the directory in which an external app is installed to
+func (b *Base) GetExternallAppDirectory(c Component) string {
+	return filepath.Join(b.Target(), constants.EXTERNAL_APP_DIR, c.Name)
+}
+
+//Generates a new work directory
+//Returns a path to the directory
+func makeWorkDirectory(targetPath string) (string, error) {
 	workdir := filepath.Join(targetPath, constants.WORKDIR)
 	//If the .workdir directory does not exist in targetPath, make it.
 	if !utils.PathExists(workdir) {
@@ -66,25 +80,32 @@ func SaveArtifact(data []byte, targetPath, name string) error {
 		err := os.MkdirAll(workdir, 0700)
 		if err != nil {
 			logrus.Fatalf("Failed to make work directory in %s", targetPath)
-			return errors.New("Failed to make work directory")
+			return "", errors.New("Failed to make work directory")
 		}
+	}
+	return workdir, nil
+}
+
+//SaveArtifact writes a templated artifact to the .workdir directory.
+//If .workdir does not exist, it is created.
+//data - a []byte of the templated file
+//name - the name of the file to write to
+func SaveArtifact(data []byte, targetPath, name string) error {
+	workdir, err := makeWorkDirectory(targetPath)
+	if err != nil {
+		return err
 	}
 
 	//Create the file to write the template to
 	fullPath := filepath.Join(workdir, name)
 	templateFile, err := os.Create(fullPath)
-	defer templateFile.Close()
 	if err != nil {
 		logrus.Fatalf("Unable to create template file: %s", err)
 		return errors.New("Failed to create template file")
 	}
 
-	//Write the data to the template file
-	defer templateFile.Close()
-	_, err = templateFile.Write(data)
-	if err != nil {
-		logrus.Errorf("Failed to write to template file at %s", fullPath)
-		return errors.New("Failed to write to template file")
+	if utils.WriteToFile(data, templateFile); err != nil {
+		return err
 	}
 	return nil
 }

@@ -15,7 +15,7 @@ import (
 //Base contains a set of nulecule config properties
 //It is set by the atomicapp subcommands
 type Base struct {
-	AnswersData        string
+	AnswersData        map[string][]Param
 	MainfileData       *Mainfile
 	targetPath         string
 	Nodeps             bool
@@ -44,15 +44,16 @@ func New(targetPath, app string) *Base {
 	b := &Base{app: app}
 	b.setTargetPath(targetPath)
 	b.MainfileData = &Mainfile{}
+	b.AnswersData = make(map[string][]Param)
 	return b
 }
 
 //ReadMainFile will read the Nulecule file and fill the MainfileData field
 func (b *Base) ReadMainFile() error {
 	//Check for valid path
-	targetFile := filepath.Join(b.targetPath, constants.MAIN_FILE)
+	targetFile := filepath.Join(b.Target(), constants.MAIN_FILE)
 	if !utils.PathExists(targetFile) {
-		logrus.Fatalf("Could not find %s file in %s", constants.MAIN_FILE, b.targetPath)
+		logrus.Fatalf("Could not find %s file in %s", constants.MAIN_FILE, b.Target())
 		return errors.New("File does not exist")
 	}
 
@@ -125,7 +126,7 @@ func (b *Base) checkProviderArtifact(c Component, provider string, checkedProvid
 		for _, artifactEntry := range artifacts {
 			//If the entry has a path field, check it for validity
 			if artifactEntry.Path != "" {
-				fullPath := filepath.Join(b.targetPath, utils.SanitizePath(artifactEntry.Path))
+				fullPath := filepath.Join(b.Target(), utils.SanitizePath(artifactEntry.Path))
 				if utils.PathExists(fullPath) && utils.PathIsFile(fullPath) {
 					logrus.Infof("Artifact %s: OK.", fullPath)
 				} else {
@@ -186,9 +187,14 @@ func (b *Base) setTargetPath(target string) error {
 	return nil
 }
 
-//Target is a getter for nulecule's target field
+//Target is a getter for nulecule base's target field
 func (b *Base) Target() string {
 	return b.targetPath
+}
+
+//App is a getter for the nulecule base's app field
+func (b *Base) App() string {
+	return b.app
 }
 
 //SetYAML is implemented by v1 of the go-yaml package. This method is invoked when go-yaml attempts to parse an ArtifactEntry via Unmarshal()
