@@ -1,5 +1,5 @@
 # Nulecule-go
-####  (A Golang implementation of the Nulecule spec:  https://github.com/projectatomic/nulecule)
+####  (A Golang implementation of the [Nulecule](https://github.com/projectatomic/nulecule) spec)
 
 ## Dependencies
 - Version 1 of [go-yaml](https://github.com/go-yaml/yaml/tree/v1)

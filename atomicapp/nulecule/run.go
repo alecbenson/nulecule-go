@@ -66,7 +66,7 @@ func (b *Base) deployGraph(ask bool, answersFile string) {
 		if IsExternal(c) {
 			externalDir := b.GetExternallAppDirectory(c)
 			externalBase := New(externalDir, "")
-			externalBase.Run(ask, b.Target())
+			externalBase.Run(ask, b.AnswersDir())
 		}
 		b.processComponent(&c, ask)
 	}
