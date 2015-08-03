@@ -8,7 +8,7 @@ import (
 
 func TestLoggingLevel(t *testing.T) {
 	expectedLevel := logrus.ErrorLevel
-	if level := getLevel(3); level != expectedLevel {
-		logrus.Fatalf("Passed in level 3, expected logrus.ErrorLevel, got %v", level)
+	if level := getLevel(2); level != expectedLevel {
+		logrus.Fatalf("Passed in level 4, expected logrus.ErrorLevel, got %v", level)
 	}
 }

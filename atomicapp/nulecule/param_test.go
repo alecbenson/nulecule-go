@@ -1,6 +1,8 @@
 package nulecule
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestCheckConstraints(t *testing.T) {
 	var (
@@ -32,6 +34,7 @@ func TestCheckConstraints(t *testing.T) {
 }
 
 func TestMakeTemplateReplacements(t *testing.T) {
+	testBase := New("", "", true)
 	testParam1 := Param{
 		Name:    "parameter",
 		Default: "test",
@@ -44,7 +47,7 @@ func TestMakeTemplateReplacements(t *testing.T) {
 
 	c := Component{Params: []Param{testParam1, testParam2}}
 	template := []byte("this is a $parameter that should $result")
-	data, err := makeTemplateReplacements(template, &c, false)
+	data, err := testBase.makeTemplateReplacements(template, &c, false)
 	if err != nil {
 		t.Fatalf("Error making template replacements: %s", err)
 	}
