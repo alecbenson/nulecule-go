@@ -1,4 +1,4 @@
-all: test
+all:
 	go build -o atomicgo .
 
 test:
