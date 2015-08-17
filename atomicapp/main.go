@@ -1,18 +1,17 @@
 package main
 
 import (
-	"github.com/alecbenson/nulecule-go/atomicapp/cli"
+	"github.com/alecbenson/nulecule-go/atomicapp/cmd"
+	"github.com/codegangsta/cli"
 )
 
 func main() {
-	cli.InitGeneralFlags()
-
-	commands := []*cli.Command{
-		cli.RunCommand(),
-		cli.InstallCommand(),
-		cli.StopCommand(),
+	commands := []cli.Command{
+		cmd.RunCommand(),
+		cmd.InstallCommand(),
+		cmd.StopCommand(),
 	}
 
-	//Iterate through all commands and dispatch appropriately
-	cli.ParseCommands(commands)
+	//Initialize the application and run
+	cmd.InitApp(commands)
 }

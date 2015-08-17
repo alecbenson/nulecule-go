@@ -1,8 +1,8 @@
 package logging
 
-import(
+import (
 	"github.com/Sirupsen/logrus"
-	)
+)
 
 func SetLogLevel(level int) {
 	if level >= 0 && level <= 5 {
@@ -13,17 +13,17 @@ func SetLogLevel(level int) {
 
 func getLevel(level int) logrus.Level {
 	switch level {
-	case 0:
-		return logrus.DebugLevel
-	case 1:
-		return logrus.InfoLevel
-	case 2:
-		return logrus.WarnLevel
-	case 3:
-		return logrus.ErrorLevel
-	case 4:
-		return logrus.FatalLevel
 	case 5:
+		return logrus.DebugLevel
+	case 4:
+		return logrus.InfoLevel
+	case 3:
+		return logrus.WarnLevel
+	case 2:
+		return logrus.ErrorLevel
+	case 1:
+		return logrus.FatalLevel
+	case 0:
 		return logrus.PanicLevel
 	default:
 		return logrus.ErrorLevel

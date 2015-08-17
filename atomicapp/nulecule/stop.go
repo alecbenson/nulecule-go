@@ -26,13 +26,13 @@ func (b *Base) undeployAllProviders() {
 	for _, c := range graph {
 		if IsExternal(c) {
 			externalDir := b.GetExternallAppDirectory(c)
-			externalBase := New(externalDir, "")
+			externalBase := New(externalDir, "", b.DryRun)
 			externalBase.Stop()
 			continue
 		}
 		for providerName, artifactEntries := range c.Artifacts {
 			logrus.Infof("Undeploying provider: %s...", providerName)
-			prov = provider.New(providerName, b.Target())
+			prov = provider.New(providerName, b.Target(), b.DryRun)
 			artifacts := arrangeArtifacts(artifactEntries)
 			prov.SetArtifacts(artifacts)
 			prov.Init()

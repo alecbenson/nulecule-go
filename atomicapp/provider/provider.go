@@ -70,17 +70,17 @@ func (c *Config) WorkDirectory() string {
 }
 
 //New instantiates the provider with the give name
-func New(provider string, targetPath string) Provider {
+func New(provider string, targetPath string, dryRun bool) Provider {
 	sanitizedProvider := strings.ToLower(provider)
 	switch sanitizedProvider {
 	case "kubernetes":
-		return NewKubernetes(targetPath)
+		return NewKubernetes(targetPath, dryRun)
 	case "docker":
-		return NewDocker(targetPath)
+		return NewDocker(targetPath, dryRun)
 	case "openshift":
-		return NewOpenshift(targetPath)
+		return NewOpenshift(targetPath, dryRun)
 	default:
 		logrus.Errorf("Unrecognized provider: %s. Defaulting to %s", sanitizedProvider, constants.DEFAULT_PROVIDER)
-		return NewKubernetes(targetPath)
+		return NewKubernetes(targetPath, dryRun)
 	}
 }

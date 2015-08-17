@@ -31,10 +31,11 @@ type metadata struct {
 }
 
 //NewKubernetes instantiates a new Kubernetes provider
-func NewKubernetes(targetPath string) *Kubernetes {
+func NewKubernetes(targetPath string, dryRun bool) *Kubernetes {
 	provider := new(Kubernetes)
 	provider.Config = new(Config)
 	provider.targetPath = targetPath
+	provider.Config.dryRun = dryRun
 	return provider
 }
 

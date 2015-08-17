@@ -8,10 +8,11 @@ type Openshift struct {
 }
 
 //NewOpenshift instantiates a new Kubernetes provider
-func NewOpenshift(targetPath string) *Openshift {
+func NewOpenshift(targetPath string, dryRun bool) *Openshift {
 	provider := new(Openshift)
 	provider.Config = new(Config)
 	provider.targetPath = targetPath
+	provider.Config.dryRun = dryRun
 	return provider
 }
 

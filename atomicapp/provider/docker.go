@@ -19,10 +19,11 @@ type Docker struct {
 }
 
 //NewDocker instantiates a new Kubernetes provider
-func NewDocker(targetPath string) *Docker {
+func NewDocker(targetPath string, dryRun bool) *Docker {
 	provider := new(Docker)
 	provider.Config = new(Config)
 	provider.targetPath = targetPath
+	provider.Config.dryRun = dryRun
 	return provider
 }
 

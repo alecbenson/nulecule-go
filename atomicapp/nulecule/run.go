@@ -30,7 +30,7 @@ func (b *Base) processComponent(c *Component, ask bool) {
 		b.processArtifacts(c, providerName, ask)
 
 		logrus.Infof("Deploying provider: %s...", providerName)
-		prov = provider.New(providerName, b.Target())
+		prov = provider.New(providerName, b.Target(), b.DryRun)
 		prov.SetArtifacts(artifacts)
 		prov.Init()
 		prov.Deploy()
@@ -65,7 +65,7 @@ func (b *Base) deployGraph(ask bool, answersFile string) {
 	for _, c := range graph {
 		if IsExternal(c) {
 			externalDir := b.GetExternallAppDirectory(c)
-			externalBase := New(externalDir, "")
+			externalBase := New(externalDir, "", b.DryRun)
 			externalBase.Run(ask, b.AnswersDir())
 		}
 		b.processComponent(&c, ask)

@@ -20,6 +20,7 @@ type Base struct {
 	MainfileData       *Mainfile
 	targetPath         string
 	Nodeps             bool
+	DryRun             bool
 	AppPath            string
 	app                string
 	WriteSampleAnswers bool
@@ -41,12 +42,13 @@ type Component struct {
 }
 
 //New creates a new base Nulecule object and initializes the fields
-func New(targetPath, app string) *Base {
+func New(targetPath, app string, dryRun bool) *Base {
 	b := &Base{app: app}
 	b.setTargetPath(targetPath)
 	b.setAnswersDir(b.Target())
 	b.MainfileData = &Mainfile{}
 	b.AnswersData = make(map[string]Answers)
+	b.DryRun = dryRun
 	return b
 }
 

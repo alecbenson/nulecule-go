@@ -47,6 +47,10 @@ func (b *Base) InstallDependencies() error {
 			b.updateComponentAnswers(c)
 			continue
 		}
+		if b.Nodeps {
+			logrus.Warnf("No-deps flag is set, so %s will not be installed", c.Name)
+			continue
+		}
 		logrus.Infof("Installing dependency: %s", c.Name)
 		image, err := GetSourceImage(c)
 		if err != nil {
@@ -56,7 +60,7 @@ func (b *Base) InstallDependencies() error {
 		if err != nil {
 			return err
 		}
-		externalBase := New(externalDir, image)
+		externalBase := New(externalDir, image, b.DryRun)
 		externalBase.setAnswersDir(b.Target())
 		if err := externalBase.Install(); err != nil {
 			logrus.Panicf("Failed to install dependency: %s", err)
@@ -106,12 +110,12 @@ func checkInstallOverwrite(tmpTarget, dstTarget string) error {
 		return nil
 	}
 	//Parse the nulecule file in the target directory
-	targetBase := New(dstTarget, "")
+	targetBase := New(dstTarget, "", true)
 	targetBase.ReadMainFile()
 	targetID := targetBase.MainfileData.ID
 
 	//Parse the nulecule file in the tmp directory
-	tmpBase := New(tmpTarget, "")
+	tmpBase := New(tmpTarget, "", true)
 	tmpBase.ReadMainFile()
 	tmpID := tmpBase.MainfileData.ID
 
