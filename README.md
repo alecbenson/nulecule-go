@@ -2,15 +2,20 @@
 ####  (A Golang implementation of the [Nulecule](https://github.com/projectatomic/nulecule) spec)
 
 ## Dependencies
-- Version 1 of [go-yaml](https://github.com/go-yaml/yaml/tree/v1)
-  - Also available through Yum: `yum install golang-gopkg-yaml`
 - A version of docker that supports the `--format flag` for `docker -V`.
   -  [Included since PR #14194](https://github.com/docker/docker/pull/14194)
 - You will likely want a working version of [Kubernetes](https://github.com/GoogleCloudPlatform/kubernetes) installed on your system:
     -  [Fedora Instructions](https://github.com/GoogleCloudPlatform/kubernetes/blob/master/docs/getting-started-guides/fedora/fedora_manual_config.md)
     - [CentOS instructions](https://github.com/GoogleCloudPlatform/kubernetes/blob/master/docs/getting-started-guides/centos/centos_manual_config.md)
+- [Go-yaml-v1](https://github.com/go-yaml/yaml/tree/v1)
+  - `yum install golang-gopkg-yaml-devel.noarch`
 - [Sirupsen's Logrus](https://github.com/Sirupsen/logrus)
+  - `yum install golang-github-Sirupsen-logrus-devel.noarch`
 - [Codegangsta's CLI](https://github.com/codegangsta/cli)
+  - `yum install golang-github-codegangsta-cli-devel.noarch`
+
+Note that if you are installing these dependencies through `yum`, you will need to add `/usr/share/gocode` to your `$GOPATH`:
+  - `export GOPATH=$GOPATH:/usr/share/gocode`
 
 ## Installation
 Clone the repository to within your `$GOPATH` and build the binary using the included makefile
