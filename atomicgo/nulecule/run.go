@@ -4,9 +4,9 @@ import (
 	"path/filepath"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/alecbenson/nulecule-go/atomicapp/constants"
-	"github.com/alecbenson/nulecule-go/atomicapp/provider"
-	"github.com/alecbenson/nulecule-go/atomicapp/utils"
+	"github.com/alecbenson/nulecule-go/atomicgo/constants"
+	"github.com/alecbenson/nulecule-go/atomicgo/provider"
+	"github.com/alecbenson/nulecule-go/atomicgo/utils"
 )
 
 //Run starts the nulecule run process to deploy a clustered application

@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/alecbenson/nulecule-go/atomicapp/constants"
-	"github.com/alecbenson/nulecule-go/atomicapp/container"
-	"github.com/alecbenson/nulecule-go/atomicapp/utils"
+	"github.com/alecbenson/nulecule-go/atomicgo/constants"
+	"github.com/alecbenson/nulecule-go/atomicgo/container"
+	"github.com/alecbenson/nulecule-go/atomicgo/utils"
 )
 
 //Install starts the install process

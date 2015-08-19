@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/alecbenson/nulecule-go/atomicapp/utils"
+	"github.com/alecbenson/nulecule-go/atomicgo/utils"
 
 	"os/exec"
 	"path/filepath"

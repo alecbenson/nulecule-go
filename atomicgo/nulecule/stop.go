@@ -2,9 +2,9 @@ package nulecule
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/alecbenson/nulecule-go/atomicapp/constants"
-	"github.com/alecbenson/nulecule-go/atomicapp/provider"
-	"github.com/alecbenson/nulecule-go/atomicapp/utils"
+	"github.com/alecbenson/nulecule-go/atomicgo/constants"
+	"github.com/alecbenson/nulecule-go/atomicgo/provider"
+	"github.com/alecbenson/nulecule-go/atomicgo/utils"
 	"os"
 	"path/filepath"
 )

@@ -2,8 +2,8 @@ package container
 
 import (
 	"fmt"
-	"github.com/alecbenson/nulecule-go/atomicapp/constants"
-	"github.com/alecbenson/nulecule-go/atomicapp/utils"
+	"github.com/alecbenson/nulecule-go/atomicgo/constants"
+	"github.com/alecbenson/nulecule-go/atomicgo/utils"
 	"os/exec"
 )
 

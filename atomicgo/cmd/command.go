@@ -3,8 +3,8 @@ package cmd
 import (
 	"os"
 
-	"github.com/alecbenson/nulecule-go/atomicapp/constants"
-	"github.com/alecbenson/nulecule-go/atomicapp/logging"
+	"github.com/alecbenson/nulecule-go/atomicgo/constants"
+	"github.com/alecbenson/nulecule-go/atomicgo/logging"
 	"github.com/codegangsta/cli"
 )
 
